@@ -6,11 +6,13 @@ import java.util.Map;
 import com.giftialab.teyvatmod.entities.human.CharacterEntity;
 import com.giftialab.teyvatmod.util.DoubleBuffer;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -21,8 +23,8 @@ public class AIBrain extends AIUpdater {
 	private ITargetClassifier targetClassifier;
 	
 	private RiskLevelEnum riskLevel = RiskLevelEnum.PEACE, origRiskLevel = RiskLevelEnum.PEACE;
-	private float highRiskBound = 10, midRiskBound = 4;
-	private double sightAngle = 60;
+	private float highRiskBound = 6, midRiskBound = 2;
+	private double sightAngle = 90;
 	private float totalRiskScore;
 	
 	private static class EntityForgetTimeMap extends HashMap<Integer, Long> { private static final long serialVersionUID = 1L; }
@@ -89,8 +91,10 @@ public class AIBrain extends AIUpdater {
 	
 	private float updateRiskLevel(AIBattleSight sight) {
 		if (sight.getHostileCount() == 0) {
-			origRiskLevel = riskLevel;
-			riskLevel = RiskLevelEnum.PEACE;
+			if (riskLevel != RiskLevelEnum.PEACE) {
+				origRiskLevel = riskLevel;
+				riskLevel = RiskLevelEnum.PEACE;
+			}
 			return 0;
 		} else {
 			float riskScore = 0;
@@ -98,14 +102,20 @@ public class AIBrain extends AIUpdater {
 				riskScore += block.getRiskScore();
 			}
 			if (riskScore >= getHighRiskBound()) {
-				origRiskLevel = riskLevel;
-				riskLevel = RiskLevelEnum.HIGH;
+				if (riskLevel != RiskLevelEnum.HIGH) {
+					origRiskLevel = riskLevel;
+					riskLevel = RiskLevelEnum.HIGH;
+				}
 			} else if (riskScore >= getMidRiskBound()) {
-				origRiskLevel = riskLevel;
-				riskLevel = RiskLevelEnum.MID;
+				if (riskLevel != RiskLevelEnum.MID) {
+					origRiskLevel = riskLevel;
+					riskLevel = RiskLevelEnum.MID;
+				}
 			} else {
-				origRiskLevel = riskLevel;
-				riskLevel = RiskLevelEnum.LOW;
+				if (riskLevel != RiskLevelEnum.LOW) {
+					origRiskLevel = riskLevel;
+					riskLevel = RiskLevelEnum.LOW;
+				}
 			}
 			return riskScore;
 		}
@@ -138,40 +148,37 @@ public class AIBrain extends AIUpdater {
 			LivingEntity entity = sightBlock.getHostiles(rankIdx);
 			ItemStack itemInHand = entity.getItemInHand(InteractionHand.MAIN_HAND);
 			if (itemInHand != null && (itemInHand.getItem() == Items.BOW || itemInHand.getItem() == Items.CROSSBOW)) {
-				float score = (float) (entity.getAttributeValue(Attributes.ATTACK_DAMAGE) / Math.sqrt(distSq));
+				float score = (float) (entity.getAttributeValue(Attributes.ATTACK_DAMAGE) / Math.max(Mth.sqrt((float) distSq - 8), 1));
+				if (entity instanceof Mob) {
+					if (((Mob) entity).getTarget() == owner) {
+						score *= 2;
+					}
+					if (((Mob) entity).isAggressive()) {
+						score *= 1.5;
+					}
+				}
 				sight.getSightBlock(sightBlockId).addRiskScore(score);
 				sight.getSightBlock(sightBlockId + (AIBattleSight.SIGHT_BLOCK_NUM >> 1)).addRiskScore(score / 2);
-			} else if (entity instanceof Mob) {
+			} else if (entity instanceof Creeper) {
+				sight.getSightBlock(sightBlockId).addRiskScore(((float) entity.getAttributeValue(Attributes.ATTACK_DAMAGE) + 10.0F)/ ((float) distSq + 0.1f));
+			} if (entity instanceof Mob) {
 				if (flag1) {
 					continue;
 				}
 				flag1 = true;
 				
-				int riskSec = 24;
-				// if (((Mob) entity).getTarget() == owner) {
-				// 	riskSec += 16;
-				// }
-				float exptectedRiskDistSq = entity.getSpeed() * riskSec + entity.getBbWidth() + owner.getBbWidth();
+				int riskSec = 32;
+				if (((Mob) entity).getTarget() == owner) {
+				 	riskSec += 8;
+				}
+				float exptectedRiskDistSq = Math.max(entity.getSpeed(), 0.3F) * riskSec + entity.getBbWidth() + owner.getBbWidth();
 				exptectedRiskDistSq *= exptectedRiskDistSq;
 				
 				if (exptectedRiskDistSq < distSq) {
 					continue;
 				}
-				float score = (1 - (float) (distSq / exptectedRiskDistSq)) * (float) entity.getAttributeValue(Attributes.ATTACK_DAMAGE);
-				// float totalScore = score, origScore = score;
-				
-				int blockNum = AIBattleSight.SIGHT_BLOCK_NUM >> 2;
-				float scoreDec = score / blockNum;
+				float score = (4 - (float) (distSq / exptectedRiskDistSq)) * (float) entity.getAttributeValue(Attributes.ATTACK_DAMAGE);
 				sight.getSightBlock(sightBlockId).addRiskScore(score);
-				for (int i = 1; i <= blockNum; ++i) {
-					score -= scoreDec;
-					// totalScore += score;
-					// totalScore += score;
-					sight.getSightBlock(sightBlockId + i).addRiskScore(score);
-					sight.getSightBlock(sightBlockId - i).addRiskScore(score);
-				}
-				
-				// livingEntity.setCustomName(new net.minecraft.network.chat.TextComponent("" + sightBlockId + ", " + origScore + ", " + totalScore));
 			}
 		}
 	}

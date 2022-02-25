@@ -1,8 +1,5 @@
 package com.giftialab.teyvatmod;
 
-import java.util.Set;
-
-import org.apache.commons.compress.utils.Sets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,21 +7,16 @@ import com.giftialab.teyvatmod.entities.human.BaronBunnyEntity;
 import com.giftialab.teyvatmod.entities.human.BaronBunnyRenderer;
 import com.giftialab.teyvatmod.entities.human.CharacterEntity;
 import com.giftialab.teyvatmod.entities.human.CharacterRenderer;
+import com.giftialab.teyvatmod.entities.human.EleArrow;
+import com.giftialab.teyvatmod.entities.human.EleArrowRenderer;
 
 import net.minecraft.client.renderer.entity.EntityRenderers;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.monster.Vindicator;
-import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -65,12 +57,15 @@ public class TeyvatMod {
     	@SubscribeEvent
     	public static void onEntityRegistry(final RegistryEvent.Register<EntityType<?>> event) {
     		event.getRegistry().register(TeyvatElements.CHAR_AMBER_TYPE);
+    		event.getRegistry().register(TeyvatElements.CHAR_HUTAO_TYPE);
     		event.getRegistry().register(TeyvatElements.BARON_BUNNY_ENTITY_TYPE);
+    		event.getRegistry().register(TeyvatElements.ENTITY_ELE_ARROW_TYPE);
     	}
     	
     	@SubscribeEvent
     	public static void onEntityCreateAttrHandler(final EntityAttributeCreationEvent event) {
     		event.put(TeyvatElements.CHAR_AMBER_TYPE, CharacterEntity.createAttributes().build());
+    		event.put(TeyvatElements.CHAR_HUTAO_TYPE, CharacterEntity.createAttributes().build());
     		event.put(TeyvatElements.BARON_BUNNY_ENTITY_TYPE, BaronBunnyEntity.createAttributes().build());
     	}
     	
@@ -82,7 +77,9 @@ public class TeyvatMod {
     	@SubscribeEvent
         public static void onClientStarting(FMLClientSetupEvent event) {
         	EntityRenderers.<CharacterEntity>register(TeyvatElements.CHAR_AMBER_TYPE, CharacterRenderer::new);
+        	EntityRenderers.<CharacterEntity>register(TeyvatElements.CHAR_HUTAO_TYPE, CharacterRenderer::new);
         	EntityRenderers.<BaronBunnyEntity>register(TeyvatElements.BARON_BUNNY_ENTITY_TYPE, BaronBunnyRenderer::new);
+        	EntityRenderers.<EleArrow>register(TeyvatElements.ENTITY_ELE_ARROW_TYPE, EleArrowRenderer::new);
         }
     	
     }
@@ -93,24 +90,8 @@ public class TeyvatMod {
     	@SubscribeEvent
         public static void onServerStarting(ServerStartingEvent event) {}
     	
-    	private static final Set<Class<? extends Entity>> ENEMY_SET = Sets.newHashSet(
-    			Vindicator.class, Zombie.class);
-    	
-    	@SubscribeEvent
-    	public static void onEntityJoinWorld(final EntityJoinWorldEvent event) {
-    		if (ENEMY_SET.contains(event.getEntity().getClass())) {
-    			((Mob) event.getEntity()).targetSelector.addGoal(2, new NearestAttackableTargetGoal<>((Mob) event.getEntity(), CharacterEntity.class, true));
-    		}
-    	}
-    	
-        @SubscribeEvent
-    	public static void onEntityAttacked(final LivingAttackEvent event) {
-    		if (event.getEntityLiving() instanceof CharacterEntity) {
-//    			((CharacterEntity) event.getEntityLiving()).getAIBrain().onEntityAttacked(event.getSource().getEntity());
-    		} else if (event.getSource().getEntity() instanceof CharacterEntity) {
-//    			((CharacterEntity) event.getSource().getEntity()).getAIBrain().onAttackEntity(event.getEntity());
-    		}
-    	}
+//    	private static final Set<Class<? extends Entity>> ENEMY_SET = Sets.newHashSet(
+//    			Vindicator.class, Zombie.class);
         
     }
     

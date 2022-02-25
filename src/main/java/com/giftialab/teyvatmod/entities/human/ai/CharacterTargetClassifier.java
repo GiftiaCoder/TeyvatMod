@@ -17,7 +17,11 @@ public class CharacterTargetClassifier implements ITargetClassifier {
 	@SuppressWarnings("unchecked")
 	private static final Set<Class<? extends Entity>> HOSTILE_CLASS = Sets.newHashSet(new Class[] {
 			Vindicator.class, Pillager.class,
-			Zombie.class, ZombieVillager.class, ZombifiedPiglin.class
+			Zombie.class, ZombieVillager.class, ZombifiedPiglin.class, Husk.class, Drowned.class,
+			Skeleton.class, Stray.class, WitherSkeleton.class,
+			Spider.class,
+			Creeper.class,
+//			Slime.class
 	});
 	@SuppressWarnings("unchecked")
 	private static final Set<Class<? extends Entity>> AVOID_ATTACK_CLASS = Sets.newHashSet(new Class[] {

@@ -1,5 +1,6 @@
 package com.giftialab.teyvatmod.entities.human;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -26,6 +27,7 @@ public class BaronBunnyEntity extends Mob {
 	
 	public BaronBunnyEntity(EntityType<? extends Mob> type, Level level) {
 		super(type, level);
+		((ServerLevel) level).structureFeatureManager();
 	}
 
 	public BaronBunnyEntity(EntityType<? extends Mob> type, Level level, Entity master) {

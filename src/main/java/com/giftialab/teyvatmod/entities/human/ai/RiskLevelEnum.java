@@ -1,29 +1,24 @@
 package com.giftialab.teyvatmod.entities.human.ai;
 
 public enum RiskLevelEnum {
-	PEACE(false, false, false),
-	LOW(true, false, false),
-	MID(true, true, true),
-	HIGH(true, true, true);
-
-	private boolean isFindTarget;
-	private boolean shouldQuickShoot;
-	private boolean needBreakOut;
+	PEACE(false, false),
+	LOW(true, false),
+	MID(true, true),
+	HIGH(false, true);
 	
-	private RiskLevelEnum(boolean isFindTarget, boolean shouldQuickShoot, boolean needBreakOut) {
-		this.isFindTarget = isFindTarget;
-		this.shouldQuickShoot = shouldQuickShoot;
-		this.needBreakOut = needBreakOut;
+	private boolean enbaleLow, enbaleHigh;
+	
+	private RiskLevelEnum(boolean enbaleLow, boolean enbaleHigh) {
+		this.enbaleLow = enbaleLow;
+		this.enbaleHigh = enbaleHigh;
 	}
 	
-	public boolean isFindTarget() {
-		return isFindTarget;
+	public boolean enableLow() {
+		return enbaleLow;
 	}
-	public boolean shouldQuickShoot() {
-		return shouldQuickShoot;
-	}
-	public boolean needBreakOut() {
-		return needBreakOut;
+	
+	public boolean enableHigh() {
+		return enbaleHigh;
 	}
 
 }

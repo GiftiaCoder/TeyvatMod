@@ -15,7 +15,15 @@ public class AIBattleSight extends AIUpdater {
 	public static final int SIGHT_BLOCK_HALF_ANGLE = SIGHT_BLOCK_ANGLE / 2;
 	public static final int SIGHT_BLOCK_NUM = 360 / SIGHT_BLOCK_ANGLE;
 	public static final double IGNORE_SIZE_DIST_SQ = Math.sin(SIGHT_BLOCK_HALF_ANGLE) * Math.sin(SIGHT_BLOCK_HALF_ANGLE) * 16.0D;
-
+	public static final int[] SIGHT_BLOCK_FACING;
+	
+	static {
+		SIGHT_BLOCK_FACING = new int[SIGHT_BLOCK_NUM];
+		for (int i = 0, facingAngle = 0; i < SIGHT_BLOCK_NUM; ++i, facingAngle += SIGHT_BLOCK_ANGLE) {
+			SIGHT_BLOCK_FACING[i] = facingAngle;
+		}
+	}
+	
 	private CharacterEntity owner;
 	private int hostileCount = 0;
 	private SightBlock[] sightBlocks = new SightBlock[SIGHT_BLOCK_NUM];
@@ -24,8 +32,8 @@ public class AIBattleSight extends AIUpdater {
 	public AIBattleSight(CharacterEntity entity, int tickCount) {
 		super(tickCount);
 		this.owner = entity;
-		for (int i = 0, facingAngle = 0; i < SIGHT_BLOCK_NUM; i++, facingAngle += SIGHT_BLOCK_ANGLE) {
-			this.sightBlocks[i] = new SightBlock(i, facingAngle);
+		for (int i = 0; i < SIGHT_BLOCK_NUM; ++i) {
+			this.sightBlocks[i] = new SightBlock(i, SIGHT_BLOCK_FACING[i]);
 		}
 	}
 
@@ -99,7 +107,7 @@ public class AIBattleSight extends AIUpdater {
 	}
 
 	private void calculateWindowRiskScore() {
-		int halfWindowSize = 2;
+		int halfWindowSize = (SIGHT_BLOCK_NUM >> 1) / 3;
 		float curWindowRiskScore = 0.0F;
 		for (int i = -halfWindowSize; i <= halfWindowSize; i++) {
 			curWindowRiskScore += (getSightBlock(i)).riskScore;
